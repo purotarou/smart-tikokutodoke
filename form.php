@@ -57,6 +57,7 @@ $pdo = null;
     <h2>ご確認ください</h2>
     <form method="post" action="form.php">
     <input type="hidden" name="student_id" value="<?php echo htmlspecialchars($student_id, ENT_QUOTES, 'UTF-8'); ?>">
+    //表を囲っている枠
     <div class="table-outline">
     <?php foreach($student_array as $student): ?>
         <div class="grade"><?php echo $student["grade"]; ?>年</div>
