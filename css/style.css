@@ -1,0 +1,179 @@
+@charset "utf-8";
+h1 {
+    font-size: 4rem;
+    text-align: center;
+    margin: 5%;
+}
+#submitted {
+    font-size: 9rem;
+    text-align: center;
+    margin: 10%;
+}
+#return-message p {
+    position: fixed;
+    bottom: 10px;
+    right: 30px;
+    font-size: 2rem;
+}
+.main-layout {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    position: relative;
+    height: 100vh;
+}
+
+h2 {
+    position: absolute;
+    font-size: 2rem;
+    top: 5px;      
+    left: 20px;
+    margin-left: 3rem;
+}
+
+.submit-btn {
+    position: absolute;
+    height: 3rem;
+    width: 15rem;
+    bottom: 20px;
+    right: 20px;
+    font-size: 1.5rem; 
+    letter-spacing: 1.5rem;
+    text-indent: 1.5rem;
+}
+.table-outline {
+    height: 80vh;
+    width: 80vw;
+    border: 2px solid black;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: 1fr 1fr 0.2fr 3fr;
+    grid-template-areas: 
+    "grade    class   number    name     name     name      name      name       name       name"
+    "date     date     date     date     date     time      time      time       time       time"
+    "slc-inst slc-inst slc-inst slc-inst slc-inst slc-inst  slc-inst  late-count late-count late-count"
+    "reason1  reason1  reason1  reason1  reason1  reason2   reason2   reason2    reason2    reason2"
+    ;
+}
+
+.grade{
+    border: 1px solid black;
+    grid-area: grade;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.class {
+    border: 1px solid black;
+    grid-area: class;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.number{
+    border: 1px solid black;
+    grid-area: number;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.name{
+    border: 1px solid black;
+    grid-area: name;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-size: 1.5rem;
+    width: 100%; 
+}
+
+.name-indicate {
+    font-weight: bold;
+    font-size: 2rem;
+}
+
+.name-actual {
+    font-size: 3rem;
+    margin: auto;
+    transform: translateX(-3rem);
+}
+.date{
+    border: 1px solid black;
+    grid-area: date;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+}
+
+.time{
+    border: 1px solid black;
+    grid-area: time;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+    gap: 1rem;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.late-count{
+    border: 1px solid black;
+    grid-area: late-count;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+}
+
+.slc-inst {
+    border: 1px solid black;
+    grid-area: slc-inst;
+    display: flex;
+    justify-content: center;
+}
+.late-reason {
+    font-size: 2rem;
+    margin-right: 1rem;
+    align-self: center;
+}
+.slc-inst p{
+    align-self: flex-end;
+}
+
+.reason1{
+    border: 1px solid black;
+    grid-area: reason1;
+    font-size: 2rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.reason1-inner, .reason2-inner {
+    text-align: left;
+}
+
+.reason2{
+    border: 1px solid black;
+    grid-area: reason2;
+    font-size: 2rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+input[type="checkbox"] {
+    transform: scale(2);
+    margin: 2rem;
+}

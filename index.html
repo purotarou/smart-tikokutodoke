@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart遅刻届</title>
+    <meta name="description" content="text">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="css/school-late-form/script.js" defer></script>
+</head>
+<body>
+     <h1>学生証のバーコードを<br>
+        横にあるバーコードリーダーから<br>
+        読み取ってください</h1>
+
+        <form id="student-form" method="post" action="form.php">
+            <input type="number" id="student-id" name="student_id" placeholder="学生IDを入力">
+            <button type="button" onclick="submitForm()">送信</button>
+        </form>
+</body>
+</html>
