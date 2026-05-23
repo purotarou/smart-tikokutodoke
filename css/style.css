@@ -25,7 +25,7 @@ h1 {
 
 h2 {
     position: absolute;
-    font-size: 2rem;
+    font-size: 2vw;
     top: 5px;      
     left: 20px;
     margin-left: 3rem;
@@ -33,13 +33,13 @@ h2 {
 
 .submit-btn {
     position: absolute;
-    height: 3rem;
-    width: 15rem;
-    bottom: 20px;
+    height: 4.2vw;
+    width: 20vw;
+    bottom: 15px;
     right: 20px;
-    font-size: 1.5rem; 
-    letter-spacing: 1.5rem;
-    text-indent: 1.5rem;
+    font-size: 1.7vw; 
+    letter-spacing: 1.5vw;
+    text-indent: 1.5vw;
 }
 .table-outline {
     height: 80vh;
@@ -62,7 +62,7 @@ h2 {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.8rem;
+    font-size: 1.8vw;
     font-weight: bold;
 }
 
@@ -72,7 +72,7 @@ h2 {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.8rem;
+    font-size: 1.8vw;
     font-weight: bold;
 }
 
@@ -82,7 +82,7 @@ h2 {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.8rem;
+    font-size: 1.8vw;
     font-weight: bold;
 }
 
@@ -92,19 +92,20 @@ h2 {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    font-size: 1.5rem;
+    font-size: 1.5vw;
     width: 100%; 
 }
 
 .name-indicate {
     font-weight: bold;
-    font-size: 2rem;
+    font-size: 2vw;
 }
 
 .name-actual {
-    font-size: 3rem;
+    font-size: 3vw;
     margin: auto;
-    transform: translateX(-3rem);
+    transform: translateX(-3vw);
+     /* 名前を左に寄せるための調整 */
 }
 .date{
     border: 1px solid black;
@@ -112,7 +113,7 @@ h2 {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 2.5rem;
+    font-size: 2.5vw;
 }
 
 .time{
@@ -121,8 +122,8 @@ h2 {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 2.5rem;
-    gap: 1rem;
+    font-size: 2.5vw;
+    gap: 1vw;
     box-sizing: border-box;
     max-width: 100%;
 }
@@ -133,7 +134,7 @@ h2 {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.5rem;
+    font-size: 1.5vw;
 }
 
 .slc-inst {
@@ -143,8 +144,8 @@ h2 {
     justify-content: center;
 }
 .late-reason {
-    font-size: 2rem;
-    margin-right: 1rem;
+    font-size: 2vw;
+    margin-right: 1vw;
     align-self: center;
 }
 .slc-inst p{
@@ -154,7 +155,7 @@ h2 {
 .reason1{
     border: 1px solid black;
     grid-area: reason1;
-    font-size: 2rem;
+    font-size: 2vw;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -167,7 +168,7 @@ h2 {
 .reason2{
     border: 1px solid black;
     grid-area: reason2;
-    font-size: 2rem;
+    font-size: 2vw;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -175,5 +176,5 @@ h2 {
 
 input[type="checkbox"] {
     transform: scale(2);
-    margin: 2rem;
+    margin: 1vw;
 }

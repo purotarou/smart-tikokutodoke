@@ -101,6 +101,7 @@ $pdo = null;
                 <br>
                 <label><input type="checkbox" value="忘れ物">忘れ物</label>
                 <label><input type="checkbox" value="バスの遅れ">バスの遅れ</label>
+                <br>
                 <label><input class="other-reason-check" type="checkbox" value="その他">その他</label>
                 <input class="other-reason-text" type="text" placeholder="具体的に記入">
             </div>
