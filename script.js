@@ -30,4 +30,8 @@ if (otherReasonCheck && otherReasonText) {
             otherReasonText.focus();
         }
     });
+
+    otherReasonText.addEventListener('focus', function () {
+    otherReasonCheck.checked = true;
+    });
 }
