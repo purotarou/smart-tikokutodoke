@@ -19,7 +19,7 @@ try {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_late_count'])) {
-    $sql = "UPDATE `tikokutodoke-table` SET `late-count` = `late-count` + 1 WHERE `id` = :student_id;";
+    $sql = "UPDATE `tikokutodoke-table` SET `late_count` = `late_count` + 1 WHERE `id` = :student_id;";
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':student_id', $student_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -30,13 +30,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_late_count']))
 
 // function send() {
 //     // 送信処理
-//     $stmt = $pdo ->prepare("INSERT INTO `tikokutodoke-table` ( `grade`, `class`, `number`, `name`, `date`, `time`, `late-count`, `reason`) VALUES (:grade, :class, :number, :name, :date, :time, :late_count, :reason)");
+//     $stmt = $pdo ->prepare("INSERT INTO `tikokutodoke-table` ( `grade`, `class`, `number`, `name`, `date`, `time`, `late_count`, `reason`) VALUES (:grade, :class, :number, :name, :date, :time, :late_count, :reason)");
 //     $stmt->bindParam(':name', $name);
 //     $stmt->bindParam(':value', $value);
 // }
 
 //DBからデータを取得
-$sql = "SELECT `student_id`, `grade`, `class`, `number`, `name`, `late-count` FROM `student-info` WHERE `student_id` = :student_id;";
+$sql = "SELECT `student_id`, `grade`, `class`, `number`, `name`, `late_count` FROM `student-info` WHERE `student_id` = :student_id;";
 $stmt = $pdo->prepare($sql);
 $stmt->bindValue(':student_id', $student_id, PDO::PARAM_INT);
 $stmt->execute();
@@ -73,7 +73,7 @@ $pdo = null;
         <div class="time">
             <span>登校時間</span> <span><?php echo $current_time; ?></span>
         </div>  
-        <div class="late-count">遅刻回数 <?php echo $student["late-count"] + 1; ?>回</div>
+        <div class="late_count">遅刻回数 <?php echo $student["late_count"] + 1; ?>回</div>
         <div class="slc-inst"><!-- select-instructionの略 -->
             <span class="late-reason">遅刻理由</span><p>(下記から選択してください)</p>
         </div>

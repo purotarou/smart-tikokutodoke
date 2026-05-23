@@ -12,15 +12,6 @@ window.submitForm = function () {
     studentForm.submit();
 };
 
-//提出完了画面に遷移
-const submitBtn = document.querySelector('.submit-btn');
-
-if (submitBtn && !submitBtn.form) {
-    submitBtn.addEventListener('click', function () {
-        window.location.href = 'end.html';
-    });
-}
-
 //「その他」を選択したときにテキスト入力欄にフォーカスする
 const otherReasonCheck = document.querySelector('.other-reason-check');
 const otherReasonText = document.querySelector('.other-reason-text');

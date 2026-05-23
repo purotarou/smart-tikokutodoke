@@ -51,7 +51,7 @@ h2 {
     grid-template-areas: 
     "grade    class   number    name     name     name      name      name       name       name"
     "date     date     date     date     date     time      time      time       time       time"
-    "slc-inst slc-inst slc-inst slc-inst slc-inst slc-inst  slc-inst  late-count late-count late-count"
+    "slc-inst slc-inst slc-inst slc-inst slc-inst slc-inst  slc-inst  late_count late_count late_count"
     "reason1  reason1  reason1  reason1  reason1  reason2   reason2   reason2    reason2    reason2"
     ;
 }
@@ -128,9 +128,9 @@ h2 {
     max-width: 100%;
 }
 
-.late-count{
+.late_count{
     border: 1px solid black;
-    grid-area: late-count;
+    grid-area: late_count;
     display: flex;
     justify-content: center;
     align-items: center;
