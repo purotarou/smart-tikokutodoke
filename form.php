@@ -8,10 +8,13 @@ $current_week = $week[date('w')];
 $current_time = date('H:i');
 $student_id = $_POST['student_id'] ?? $_GET['student_id'] ?? 1;
 
+//DB接続
 $dbname = 'mysql:host=localhost;dbname=tikokutodoke';
 $username = 'root';
+$password = 'password';
 try {
-    $pdo = new PDO($dbname, $username);
+    $pdo = new PDO($dbname, $username, $password);
+    echo '接続成功！';
 } catch (PDOException $e) {
     echo 'DB接続エラー:' . $e->getMessage();
 }
