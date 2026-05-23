@@ -13,8 +13,7 @@ $dbname = 'mysql:host=localhost;dbname=tikokutodoke';
 $username = 'root';
 $password = 'password';
 try {
-    $pdo = new PDO($dbname, $username, $password);
-    echo '接続成功！';
+    $pdo = new PDO($dbname, $username, $password); 
 } catch (PDOException $e) {
     echo 'DB接続エラー:' . $e->getMessage();
 }
@@ -37,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_late_count']))
 // }
 
 //DBからデータを取得
-$sql = "SELECT `id`, `grade`, `class`, `number`, `name`, `late-count` FROM `tikokutodoke-table` WHERE `id` = :student_id;";
+$sql = "SELECT `student_id`, `grade`, `class`, `number`, `name`, `late-count` FROM `student-info` WHERE `student_id` = :student_id;";
 $stmt = $pdo->prepare($sql);
 $stmt->bindValue(':student_id', $student_id, PDO::PARAM_INT);
 $stmt->execute();
@@ -60,7 +59,7 @@ $pdo = null;
     <h2>ご確認ください</h2>
     <form method="post" action="form.php">
     <input type="hidden" name="student_id" value="<?php echo htmlspecialchars($student_id, ENT_QUOTES, 'UTF-8'); ?>">
-    //表を囲っている枠
+    <!-- 表を囲っている枠 -->
     <div class="table-outline">
     <?php foreach($student_array as $student): ?>
         <div class="grade"><?php echo $student["grade"]; ?>年</div>
