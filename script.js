@@ -1,4 +1,5 @@
 
+//学籍番号の取得仮置き
 window.submitForm = function () {
     const studentForm = document.getElementById('student-form');
     const studentIdInput = document.getElementById('student-id');
@@ -30,7 +31,7 @@ if (otherReasonCheck && otherReasonText) {
             otherReasonText.focus();
         }
     });
-
+    //テキスト入力欄にフォーカスしたときに「その他」を選択する
     otherReasonText.addEventListener('focus', function () {
     otherReasonCheck.checked = true;
     });
