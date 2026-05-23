@@ -134,7 +134,7 @@ h2 {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.5vw;
+    font-size: 1.8vw;
 }
 
 .slc-inst {
@@ -177,4 +177,10 @@ h2 {
 input[type="checkbox"] {
     transform: scale(2);
     margin: 1vw;
+}
+
+.other-reason-text {
+    font-size: 1.5vw;
+    padding: 0.5vw;
+    width: 25vw;
 }
