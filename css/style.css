@@ -184,3 +184,11 @@ input[type="checkbox"] {
     padding: 0.5vw;
     width: 25vw;
 }
+
+.reason-select-error {
+    color: red;
+    font-size: 1.5vw;
+    position: absolute;
+    left: 40vw;
+    top: 1vw;
+}
