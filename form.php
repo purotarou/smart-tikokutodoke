@@ -3,11 +3,11 @@
 $student_array = array();
 date_default_timezone_set('Asia/Tokyo');
 $week = ["日", "月", "火", "水", "木", "金", "土"];
-$current_date = date('Y/m/d');
-$current_week = $week[date('w')];
-$current_time = date('H:i');
+$date = date('Y/m/d');
+$week = $week[date('w')];
+$time = date('H:i');
 $student_id = $_POST['student_id'] ?? $_GET['student_id'] ?? 1;
-
+    
 //DB接続
 $dbname = 'mysql:host=localhost;dbname=tikokutodoke';
 $username = 'root';
@@ -28,12 +28,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_late_count']))
     exit;
 }
 
-// function send() {
-//     // 送信処理
-//     $stmt = $pdo ->prepare("INSERT INTO `tikokutodoke-table` ( `grade`, `class`, `number`, `name`, `date`, `time`, `late_count`, `reason`) VALUES (:grade, :class, :number, :name, :date, :time, :late_count, :reason)");
-//     $stmt->bindParam(':name', $name);
-//     $stmt->bindParam(':value', $value);
-// }
+// 遅刻届の内容をDBに送信する関数send()を定義
+function send($pdo) {
+
+    $late_count = $_POST['late_count'] + 1;
+
+    // 送信処理
+    $stmt = $pdo ->prepare("INSERT INTO `lateness-history` ( `grade`, `class`, `number`, `name`, `date`, `week`, `time`, `late_count`, `reason`) VALUES (:grade, :class, :number, :name, :date, :week, :time, :late_count, :reason)");
+    $stmt->bindParam(':grade', $_POST['grade'], PDO::PARAM_INT);
+    $stmt->bindParam(':class', $_POST['class'], PDO::PARAM_INT);
+    $stmt->bindParam(':number', $_POST['number'], PDO::PARAM_INT);
+    $stmt->bindParam(':name', $_POST['name']);
+    $stmt->bindParam(':date', $_POST['date']);
+    $stmt->bindParam(':week', $_POST['week']);
+    $stmt->bindParam(':time', $_POST['time']);
+    $stmt->bindParam(':late_count', $late_count, PDO::PARAM_INT);
+    $stmt->bindParam(':reason', $_POST['reason']);
+
+    $stmt->execute();
+}
+
+function send_ok($pdo) {
+    if(empty($_POST['reason'])){
+        echo "遅刻理由を選択してください。";
+    } else {
+        send($pdo);
+    }
+}
 
 //DBからデータを取得
 $sql = "SELECT `student_id`, `grade`, `class`, `number`, `name`, `late_count` FROM `student-info` WHERE `student_id` = :student_id;";
@@ -67,11 +88,11 @@ $pdo = null;
         <div class="number"><?php echo $student["number"]; ?>番</div>
         <div class="name"><span class="name-indicate">名前:</span><span class="name-actual"><?php echo $student["name"]; ?></span></div>
         <div class="date">
-            <?php echo $current_date; ?> 
-            (<?php echo $current_week; ?>) 曜日
+            <?php echo $date; ?> 
+            (<?php echo $week; ?>) 曜日
         </div>
         <div class="time">
-            <span>登校時間</span> <span><?php echo $current_time; ?></span>
+            <span>登校時間</span> <span><?php echo $time; ?></span>
         </div>  
         <div class="late_count">遅刻回数 <?php echo $student["late_count"] + 1; ?>回</div>
         <div class="slc-inst"><!-- select-instructionの略 -->
