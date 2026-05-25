@@ -1,5 +1,10 @@
 <?php
 
+require __DIR__ . '/vendor/autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->safeLoad();
+
 $student_array = array();
 date_default_timezone_set('Asia/Tokyo');
 $week = ["日", "月", "火", "水", "木", "金", "土"];
@@ -18,6 +23,140 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
     exit('DB接続エラー:' . $e->getMessage());
+}
+
+function create_mailer() {
+    if (empty($_ENV['MAIL_USERNAME']) || empty($_ENV['MAIL_PASSWORD'])) {
+        throw new Exception('メール送信用の環境変数が設定されていません。');
+    }
+
+    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+    $mail->isSMTP();
+    $mail->Host = 'smtp.gmail.com';
+    $mail->SMTPAuth = true;
+    $mail->Username = $_ENV['MAIL_USERNAME'];
+    $mail->Password = $_ENV['MAIL_PASSWORD'];
+    $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port = 587;
+    $mail->CharSet = 'UTF-8';
+    $mail->setFrom($_ENV['MAIL_USERNAME'], '遅刻届システム');
+
+    return $mail;
+}
+
+function send_mail($to, $to_name, $subject, $body) {
+    if (empty($to)) {
+        return;
+    }
+
+    $mail = create_mailer();
+    $mail->addAddress($to, $to_name);
+    $mail->Subject = $subject;
+    $mail->Body = $body;
+    $mail->send();
+}
+
+function get_current_period($time) {
+    $periods = [
+        1 => ['08:45', '09:30'],
+        2 => ['09:40', '10:25'],
+        3 => ['10:35', '11:20'],
+        4 => ['11:30', '12:15'],
+        5 => ['13:00', '13:45'],
+        6 => ['13:55', '14:40'],
+        7 => ['14:50', '15:35'],
+    ];
+
+    foreach ($periods as $period => $range) {
+        if ($time >= $range[0] && $time <= $range[1]) {
+            return $period;
+        }
+    }
+
+    return null;
+}
+
+function get_class_teacher($pdo, $student) {
+    $sql = "SELECT `name`, `c_teacher_mail` FROM `class-teacher` WHERE `grade` = :grade AND `class` = :class LIMIT 1;";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(':grade', $student['grade'], PDO::PARAM_INT);
+    $stmt->bindValue(':class', $student['class'], PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function get_subject_teacher($pdo, $student, $week, $period) {
+    if ($period === null) {
+        return null;
+    }
+
+    $sql = "SELECT `period`, `subject`, `name`, `s_teacher_mail`
+            FROM `subject-teacher`
+            WHERE `grade` = :grade
+              AND `class` = :class
+              AND (`weekday` = :weekday OR `weekday` = :weekday_label OR `weekday` = :weekday_number)
+              AND `period` = :period
+            LIMIT 1;";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(':grade', $student['grade'], PDO::PARAM_INT);
+    $stmt->bindValue(':class', $student['class'], PDO::PARAM_INT);
+    $stmt->bindValue(':weekday', $week);
+    $stmt->bindValue(':weekday_label', $week . '曜日');
+    $stmt->bindValue(':weekday_number', date('N'), PDO::PARAM_INT);
+    $stmt->bindValue(':period', $period, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function build_late_mail_body($student, $date, $week, $time, $late_count, $reason_text, $extra_lines = []) {
+    $lines = [
+        '遅刻届が提出されました。',
+        '',
+        '学年: ' . $student['grade'] . '年',
+        '学組: ' . $student['class'] . '組',
+        '出席番号: ' . $student['number'] . '番',
+        '氏名: ' . $student['name'],
+        '登校日時: ' . $date . '（' . $week . '） ' . $time,
+        '遅刻回数: ' . $late_count . '回',
+        '遅刻理由: ' . $reason_text,
+    ];
+
+    if (!empty($extra_lines)) {
+        $lines[] = '';
+        $lines = array_merge($lines, $extra_lines);
+    }
+
+    return implode("\n", $lines);
+}
+
+function send_teacher_notifications($pdo, $student, $date, $week, $time, $late_count, $reason_text) {
+    $class_teacher = get_class_teacher($pdo, $student);
+
+    if (!$class_teacher) {
+        throw new Exception('クラス担任のメールアドレスが見つかりません。');
+    }
+
+    $subject = '【遅刻届】' . $student['name'] . 'さんの遅刻届が提出されました';
+    $body = build_late_mail_body($student, $date, $week, $time, $late_count, $reason_text);
+    send_mail($class_teacher['c_teacher_mail'], $class_teacher['name'], $subject, $body);
+
+    $period = get_current_period($time);
+
+    if ($period === null) {
+        return;
+    }
+
+    $subject_teacher = get_subject_teacher($pdo, $student, $week, $period);
+
+    if ($subject_teacher) {
+        $extra_lines = [
+            '対象授業: ' . $subject_teacher['period'] . '限 ' . $subject_teacher['subject'],
+        ];
+        $body = build_late_mail_body($student, $date, $week, $time, $late_count, $reason_text, $extra_lines);
+        send_mail($subject_teacher['s_teacher_mail'], $subject_teacher['name'], $subject, $body);
+    }
 }
 
 // 遅刻届の内容をDBに送信する関数send()を定義
@@ -46,6 +185,11 @@ function send($pdo, $student, $date, $week, $time) {
     $stmt->bindValue(':reason', implode('、', $reasons));
 
     $stmt->execute();
+
+    return [
+        'late_count' => $late_count,
+        'reason_text' => implode('、', $reasons),
+    ];
 }
 
 //提出ボタンに対応する関数send_ok()を定義
@@ -58,8 +202,7 @@ function send_ok($pdo, $student, $date, $week, $time) {
         return "遅刻理由を選択してください。";
     }
 
-    send($pdo, $student, $date, $week, $time);
-    return '';
+    return send($pdo, $student, $date, $week, $time);
 }
 
 //DBからデータを取得
@@ -73,19 +216,25 @@ $student_array = $student ? [$student] : [];
 // 遅刻届の提出があった場合の処理
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     try {
-        $error_message = send_ok($pdo, $student, $date, $week, $time);
+        $send_result = send_ok($pdo, $student, $date, $week, $time);
 
-        if ($error_message === '') {
+        if (is_array($send_result)) {
             $sql = "UPDATE `student-info` SET `late_count` = `late_count` + 1 WHERE `student_id` = :student_id;";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':student_id', $student_id, PDO::PARAM_INT);
             $stmt->execute();
 
+            send_teacher_notifications($pdo, $student, $date, $week, $time, $send_result['late_count'], $send_result['reason_text']);
+
             header('Location: end.html');
             exit;
+        } else {
+            $error_message = $send_result;
         }
     } catch (PDOException $e) {
         $error_message = 'DB処理エラー:' . $e->getMessage();
+    } catch (Exception $e) {
+        $error_message = 'メール送信エラー:' . $e->getMessage();
     }
 }
 
@@ -153,7 +302,7 @@ $pdo = null;
                 <label><input type="checkbox" name="reason[]" value="バスの遅れ">バスの遅れ</label>
                 <br>
                 <label><input class="other-reason-check" type="checkbox" name="reason[]" value="その他">その他</label>
-                <input class="other-reason-text" type="text" name="other_reason" placeholder="具体的に記入">
+                <input class="other-reason-text" type="text" name="other_reason" placeholder="その他の記入欄">
             </div>
         </div>
     <?php endforeach; ?>
