@@ -1,10 +1,11 @@
 <?php
-
+//envファイルの読み込み
 require __DIR__ . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->safeLoad();
 
+//変数の宣言
 $student_array = array();
 date_default_timezone_set('Asia/Tokyo');
 $week = ["日", "月", "火", "水", "木", "金", "土"];
@@ -25,6 +26,7 @@ try {
     exit('DB接続エラー:' . $e->getMessage());
 }
 
+//メール送信の関数を定義
 function create_mailer() {
     if (empty($_ENV['MAIL_USERNAME']) || empty($_ENV['MAIL_PASSWORD'])) {
         throw new Exception('メール送信用の環境変数が設定されていません。');
@@ -44,40 +46,21 @@ function create_mailer() {
     return $mail;
 }
 
-function send_mail($to, $to_name, $subject, $body) {
+function send_mail($to /* 送信先メールアドレス */, $to_name /* 相手の名前 */, $subject/*件名*/, $body /* メール本文 */) {
     if (empty($to)) {
         return;
     }
-
-    $mail = create_mailer();
+    
+    $mail = create_mailer();//,メール関数を呼び出す
     $mail->addAddress($to, $to_name);
     $mail->Subject = $subject;
     $mail->Body = $body;
     $mail->send();
 }
 
-function get_current_period($time) {
-    $periods = [
-        1 => ['08:45', '09:30'],
-        2 => ['09:40', '10:25'],
-        3 => ['10:35', '11:20'],
-        4 => ['11:30', '12:15'],
-        5 => ['13:00', '13:45'],
-        6 => ['13:55', '14:40'],
-        7 => ['14:50', '15:35'],
-    ];
-
-    foreach ($periods as $period => $range) {
-        if ($time >= $range[0] && $time <= $range[1]) {
-            return $period;
-        }
-    }
-
-    return null;
-}
 
 function get_class_teacher($pdo, $student) {
-    $sql = "SELECT `name`, `c_teacher_mail` FROM `class-teacher` WHERE `grade` = :grade AND `class` = :class LIMIT 1;";
+    $sql = "SELECT `name`, `c_teacher_mail` FROM `class_teacher` WHERE `grade` = :grade AND `class` = :class LIMIT 1;";
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':grade', $student['grade'], PDO::PARAM_INT);
     $stmt->bindValue(':class', $student['class'], PDO::PARAM_INT);
@@ -86,29 +69,6 @@ function get_class_teacher($pdo, $student) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function get_subject_teacher($pdo, $student, $week, $period) {
-    if ($period === null) {
-        return null;
-    }
-
-    $sql = "SELECT `period`, `subject`, `name`, `s_teacher_mail`
-            FROM `subject-teacher`
-            WHERE `grade` = :grade
-              AND `class` = :class
-              AND (`weekday` = :weekday OR `weekday` = :weekday_label OR `weekday` = :weekday_number)
-              AND `period` = :period
-            LIMIT 1;";
-    $stmt = $pdo->prepare($sql);
-    $stmt->bindValue(':grade', $student['grade'], PDO::PARAM_INT);
-    $stmt->bindValue(':class', $student['class'], PDO::PARAM_INT);
-    $stmt->bindValue(':weekday', $week);
-    $stmt->bindValue(':weekday_label', $week . '曜日');
-    $stmt->bindValue(':weekday_number', date('N'), PDO::PARAM_INT);
-    $stmt->bindValue(':period', $period, PDO::PARAM_INT);
-    $stmt->execute();
-
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
 
 function build_late_mail_body($student, $date, $week, $time, $late_count, $reason_text, $extra_lines = []) {
     $lines = [
@@ -142,21 +102,6 @@ function send_teacher_notifications($pdo, $student, $date, $week, $time, $late_c
     $body = build_late_mail_body($student, $date, $week, $time, $late_count, $reason_text);
     send_mail($class_teacher['c_teacher_mail'], $class_teacher['name'], $subject, $body);
 
-    $period = get_current_period($time);
-
-    if ($period === null) {
-        return;
-    }
-
-    $subject_teacher = get_subject_teacher($pdo, $student, $week, $period);
-
-    if ($subject_teacher) {
-        $extra_lines = [
-            '対象授業: ' . $subject_teacher['period'] . '限 ' . $subject_teacher['subject'],
-        ];
-        $body = build_late_mail_body($student, $date, $week, $time, $late_count, $reason_text, $extra_lines);
-        send_mail($subject_teacher['s_teacher_mail'], $subject_teacher['name'], $subject, $body);
-    }
 }
 
 // 遅刻届の内容をDBに送信する関数send()を定義
@@ -173,7 +118,7 @@ function send($pdo, $student, $date, $week, $time) {
     }
 
     // 送信処理
-    $stmt = $pdo ->prepare("INSERT INTO `lateness-history` ( `grade`, `class`, `number`, `name`, `date`, `week`, `time`, `late_count`, `reason`) VALUES (:grade, :class, :number, :name, :date, :week, :time, :late_count, :reason)");
+    $stmt = $pdo ->prepare("INSERT INTO `lateness_history` ( `grade`, `class`, `number`, `name`, `date`, `week`, `time`, `late_count`, `reason`) VALUES (:grade, :class, :number, :name, :date, :week, :time, :late_count, :reason)");
     $stmt->bindValue(':grade', $student['grade'], PDO::PARAM_INT);
     $stmt->bindValue(':class', $student['class'], PDO::PARAM_INT);
     $stmt->bindValue(':number', $student['number'], PDO::PARAM_INT);
@@ -206,7 +151,7 @@ function send_ok($pdo, $student, $date, $week, $time) {
 }
 
 //DBからデータを取得
-$sql = "SELECT `student_id`, `grade`, `class`, `number`, `name`, `late_count` FROM `student-info` WHERE `student_id` = :student_id;";
+$sql = "SELECT `student_id`, `grade`, `class`, `number`, `name`, `late_count` FROM `student_info` WHERE `student_id` = :student_id;";
 $stmt = $pdo->prepare($sql);
 $stmt->bindValue(':student_id', $student_id, PDO::PARAM_INT);
 $stmt->execute();
@@ -219,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         $send_result = send_ok($pdo, $student, $date, $week, $time);
 
         if (is_array($send_result)) {
-            $sql = "UPDATE `student-info` SET `late_count` = `late_count` + 1 WHERE `student_id` = :student_id;";
+            $sql = "UPDATE `student_info` SET `late_count` = `late_count` + 1 WHERE `student_id` = :student_id;";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':student_id', $student_id, PDO::PARAM_INT);
             $stmt->execute();

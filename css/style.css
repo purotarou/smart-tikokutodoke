@@ -1,5 +1,5 @@
 @charset "utf-8";
-h1 {
+.reading_instructions {
     font-size: 4vw;
     text-align: center;
     margin: 5%;
@@ -191,4 +191,11 @@ input[type="checkbox"] {
     position: absolute;
     left: 40vw;
     top: 1vw;
+}
+
+.edit_student_btn {
+    position: absolute;
+    bottom: 15px;
+    right: 20px;
+    font-size: 1.7vw;
 }
