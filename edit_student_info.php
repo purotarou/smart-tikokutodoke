@@ -131,8 +131,24 @@ if (isset($_GET['msg'])) {
 // 編集モードかどうか（?edit=生徒ID）
 $edit_id = isset($_GET['edit']) ? (int)$_GET['edit'] : 0;
 
+// 絞り込みフィルター
+$filter_grade = isset($_GET['grade']) && $_GET['grade'] !== '' ? (int)$_GET['grade'] : null;
+$filter_class = isset($_GET['class']) && $_GET['class'] !== '' ? (int)$_GET['class'] : null;
+
+$where_parts  = [];
+$where_params = [];
+if ($filter_grade !== null) { $where_parts[] = 'grade = ?'; $where_params[] = $filter_grade; }
+if ($filter_class !== null) { $where_parts[] = 'class = ?'; $where_params[] = $filter_class; }
+$where_sql = $where_parts ? 'WHERE ' . implode(' AND ', $where_parts) : '';
+
 // 一覧データを取得
-$students = $pdo->query("SELECT * FROM student_info ORDER BY grade, class, number")->fetchAll();
+$stmt = $pdo->prepare("SELECT * FROM student_info {$where_sql} ORDER BY grade, class, number");
+$stmt->execute($where_params);
+$students = $stmt->fetchAll();
+
+// セレクトボックス用の選択肢
+$grades  = $pdo->query("SELECT DISTINCT grade FROM student_info ORDER BY grade")->fetchAll(PDO::FETCH_COLUMN);
+$classes = $pdo->query("SELECT DISTINCT class  FROM student_info ORDER BY class")->fetchAll(PDO::FETCH_COLUMN);
 
 $pdo = null;
 ?>
@@ -167,7 +183,29 @@ $pdo = null;
 
     <!-- ============ 一覧表 ============ -->
     <h2 class="management-subheader">登録されている生徒の一覧</h2>
-    <p class="management-description">現在 <?php echo count($students); ?> 人が登録されています。</p>
+
+    <form method="get" action="edit_student_info.php" class="filter-form">
+        <label class="filter-label">学年：</label>
+        <select name="grade" class="filter-select">
+            <option value="">すべて</option>
+            <?php foreach ($grades as $g): ?>
+                <option value="<?php echo h($g); ?>" <?php if ($filter_grade === (int)$g) echo 'selected'; ?>><?php echo h($g); ?>年</option>
+            <?php endforeach; ?>
+        </select>
+        <label class="filter-label">組：</label>
+        <select name="class" class="filter-select">
+            <option value="">すべて</option>
+            <?php foreach ($classes as $c): ?>
+                <option value="<?php echo h($c); ?>" <?php if ($filter_class === (int)$c) echo 'selected'; ?>><?php echo h($c); ?>組</option>
+            <?php endforeach; ?>
+        </select>
+        <button type="submit" class="btn btn-add" style="padding:10px 24px;font-size:18px">絞り込む</button>
+        <?php if ($filter_grade !== null || $filter_class !== null): ?>
+            <a href="edit_student_info.php" class="btn btn-cancel" style="padding:10px 16px;font-size:18px">リセット</a>
+        <?php endif; ?>
+    </form>
+
+    <p class="management-description"><?php echo count($students); ?> 人が表示されています。</p>
 
     <div style="margin-bottom:10px">
         <button type="button" class="btn btn-delete" id="bulk-delete-btn" style="font-size:18px;padding:12px 28px">

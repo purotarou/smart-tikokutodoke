@@ -137,9 +137,30 @@ if (isset($_GET['msg'])) {
 // 編集モード（?edit=ID）
 $edit_id = isset($_GET['edit']) ? (int)$_GET['edit'] : 0;
 
-// 新しい記録を上に表示
-$histories = $pdo->query("SELECT * FROM lateness_history ORDER BY date DESC, time DESC")->fetchAll();
+// 絞り込みフィルター
+$filter_grade  = isset($_GET['grade'])  && $_GET['grade']  !== '' ? (int)$_GET['grade']  : null;
+$filter_class  = isset($_GET['class'])  && $_GET['class']  !== '' ? (int)$_GET['class']  : null;
+$filter_number = isset($_GET['number']) && $_GET['number'] !== '' ? (int)$_GET['number'] : null;
+$filter_month  = isset($_GET['month'])  && $_GET['month']  !== '' ? (int)$_GET['month']  : null;
+$filter_name   = isset($_GET['name'])   ? trim($_GET['name']) : '';
 
+$where_parts  = [];
+$where_params = [];
+if ($filter_grade  !== null) { $where_parts[] = 'grade = ?';       $where_params[] = $filter_grade; }
+if ($filter_class  !== null) { $where_parts[] = 'class = ?';       $where_params[] = $filter_class; }
+if ($filter_number !== null) { $where_parts[] = 'number = ?';      $where_params[] = $filter_number; }
+if ($filter_month  !== null) { $where_parts[] = 'MONTH(date) = ?'; $where_params[] = $filter_month; }
+if ($filter_name   !== '')   { $where_parts[] = 'name LIKE ?';     $where_params[] = '%' . $filter_name . '%'; }
+$where_sql = $where_parts ? 'WHERE ' . implode(' AND ', $where_parts) : '';
+
+$stmt = $pdo->prepare("SELECT * FROM lateness_history {$where_sql} ORDER BY date DESC, time DESC");
+$stmt->execute($where_params);
+$histories = $stmt->fetchAll();
+
+// セレクトボックス用の選択肢
+$grades  = $pdo->query("SELECT DISTINCT grade  FROM lateness_history ORDER BY grade")->fetchAll(PDO::FETCH_COLUMN);
+$classes = $pdo->query("SELECT DISTINCT class  FROM lateness_history ORDER BY class")->fetchAll(PDO::FETCH_COLUMN);
+$numbers = $pdo->query("SELECT DISTINCT number FROM lateness_history ORDER BY number")->fetchAll(PDO::FETCH_COLUMN);
 $pdo = null;
 ?>
 <!DOCTYPE html>
@@ -174,7 +195,45 @@ $pdo = null;
 
     <!-- ============ 一覧表 ============ -->
     <h2 class="management-subheader">遅刻届の記録一覧</h2>
-    <p class="management-description">現在 <?php echo count($histories); ?> 件の記録があります。</p>
+
+    <form method="get" action="edit_late_history.php" class="filter-form">
+        <label class="filter-label">学年：</label>
+        <select name="grade" class="filter-select">
+            <option value="">すべて</option>
+            <?php foreach ($grades as $g): ?>
+                <option value="<?php echo h($g); ?>" <?php if ($filter_grade === (int)$g) echo 'selected'; ?>><?php echo h($g); ?>年</option>
+            <?php endforeach; ?>
+        </select>
+        <label class="filter-label">組：</label>
+        <select name="class" class="filter-select">
+            <option value="">すべて</option>
+            <?php foreach ($classes as $c): ?>
+                <option value="<?php echo h($c); ?>" <?php if ($filter_class === (int)$c) echo 'selected'; ?>><?php echo h($c); ?>組</option>
+            <?php endforeach; ?>
+        </select>
+        <label class="filter-label">番号：</label>
+        <select name="number" class="filter-select">
+            <option value="">すべて</option>
+            <?php foreach ($numbers as $n): ?>
+                <option value="<?php echo h($n); ?>" <?php if ($filter_number === (int)$n) echo 'selected'; ?>><?php echo h($n); ?>番</option>
+            <?php endforeach; ?>
+        </select>
+        <label class="filter-label">月：</label>
+        <select name="month" class="filter-select">
+            <option value="">すべて</option>
+            <?php for ($m = 1; $m <= 12; $m++): ?>
+                <option value="<?php echo $m; ?>" <?php if ($filter_month === $m) echo 'selected'; ?>><?php echo $m; ?>月</option>
+            <?php endfor; ?>
+        </select>
+        <label class="filter-label">名前：</label>
+        <input type="text" name="name" value="<?php echo h($filter_name); ?>" placeholder="例：田中" class="filter-input">
+        <button type="submit" class="btn btn-add" style="padding:10px 24px;font-size:18px">絞り込む</button>
+        <?php if ($filter_grade !== null || $filter_class !== null || $filter_number !== null || $filter_month !== null || $filter_name !== ''): ?>
+            <a href="edit_late_history.php" class="btn btn-cancel" style="padding:10px 16px;font-size:18px">リセット</a>
+        <?php endif; ?>
+    </form>
+
+    <p class="management-description"><?php echo count($histories); ?> 件が表示されています。</p>
 
     <!-- 一括削除ボタン（チェックを入れた行をまとめて削除） -->
     <div style="margin-bottom:10px">

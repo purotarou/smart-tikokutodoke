@@ -177,6 +177,33 @@ body.admin {
 /* 編集中の行を目立たせる */
 .editing-row td { background: #fff7e0 !important; }
 
+/* 絞り込みフィルターフォーム */
+.filter-form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 14px 0 10px;
+}
+.filter-label {
+    font-weight: bold;
+    font-size: 18px;
+}
+.filter-select {
+    font-size: 18px;
+    padding: 8px 12px;
+    border: 1px solid #aab2bd;
+    border-radius: 6px;
+    min-width: 100px;
+}
+.filter-input {
+    font-size: 18px;
+    padding: 8px 12px;
+    border: 1px solid #aab2bd;
+    border-radius: 6px;
+    width: 150px;
+}
+
 /* CSVの形式サンプル */
 .csv-sample {
     background: #f0f3f7;
