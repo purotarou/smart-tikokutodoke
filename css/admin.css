@@ -1,0 +1,189 @@
+@charset "utf-8";
+/* =============================================================
+   管理画面（ホーム・生徒・担任・遅刻履歴）の共通デザインです。
+   文字やボタンを大きめにして、見やすく・押しやすくしています。
+   ============================================================= */
+
+body.admin {
+    font-family: "Hiragino Kaku Gothic ProN", "メイリオ", Meiryo, sans-serif;
+    font-size: 18px;
+    line-height: 1.8;
+    color: #222;
+    background: #f4f6f9;
+    margin: 0;
+    padding: 0 0 60px;
+}
+
+.admin-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* 見出し */
+.management-header {
+    background: #2c5aa0;
+    color: #fff;
+    text-align: center;
+    font-size: 28px;
+    padding: 20px 10px;
+    margin: 0 0 20px;
+}
+
+.management-subheader {
+    font-size: 22px;
+    border-left: 8px solid #2c5aa0;
+    padding-left: 12px;
+    margin-top: 36px;
+}
+
+.management-description {
+    font-size: 18px;
+    color: #333;
+}
+
+/* 操作の説明ボックス（おじいちゃん向けの案内） */
+.guide-box {
+    background: #fffbe6;
+    border: 2px solid #f0c000;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+}
+.guide-box strong { color: #b36b00; }
+
+/* ホーム画面の大きなメニューボタン */
+.management-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-width: 520px;
+    margin: 30px auto;
+}
+.management-menu button,
+.menu-link {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    background: #2c5aa0;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 22px;
+    font-size: 22px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+}
+.management-menu button:hover,
+.menu-link:hover { background: #1f4178; }
+
+/* 戻るリンク */
+.back-link {
+    display: inline-block;
+    margin: 10px 0 20px;
+    font-size: 18px;
+    color: #2c5aa0;
+    text-decoration: none;
+}
+.back-link:hover { text-decoration: underline; }
+
+/* 表（一覧） */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    margin: 12px 0 30px;
+    font-size: 17px;
+}
+.data-table th,
+.data-table td {
+    border: 1px solid #c5ccd6;
+    padding: 10px 12px;
+    text-align: center;
+}
+.data-table th {
+    background: #e8eef7;
+    white-space: nowrap;
+}
+.data-table tr:nth-child(even) td { background: #f7f9fc; }
+
+/* 各種ボタン */
+.btn {
+    display: inline-block;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    color: #fff;
+}
+.btn-edit   { background: #2c8a3d; }
+.btn-edit:hover { background: #216c2f; }
+.btn-delete { background: #c0392b; }
+.btn-delete:hover { background: #97271b; }
+.btn-add    { background: #2c5aa0; padding: 12px 28px; font-size: 18px; }
+.btn-add:hover { background: #1f4178; }
+.btn-cancel { background: #888; }
+.btn-cancel:hover { background: #666; }
+
+/* 入力フォーム */
+.form-card {
+    background: #fff;
+    border: 1px solid #c5ccd6;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 16px 0 30px;
+}
+.form-card h3 { margin-top: 0; }
+.form-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.form-row label {
+    width: 160px;
+    font-weight: bold;
+}
+.form-row input[type="text"],
+.form-row input[type="number"],
+.form-row input[type="email"],
+.form-row input[type="date"],
+.form-row input[type="time"] {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px;
+    font-size: 17px;
+    border: 1px solid #aab2bd;
+    border-radius: 6px;
+}
+.form-row input[type="file"] {
+    font-size: 16px;
+}
+
+/* メッセージ表示 */
+.msg {
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin: 16px 0;
+    font-size: 18px;
+}
+.msg-success { background: #e3f6e8; border: 2px solid #2c8a3d; color: #1d5e29; }
+.msg-error   { background: #fde8e6; border: 2px solid #c0392b; color: #8c241a; }
+
+/* 編集中の行を目立たせる */
+.editing-row td { background: #fff7e0 !important; }
+
+/* CSVの形式サンプル */
+.csv-sample {
+    background: #f0f3f7;
+    border: 1px dashed #99a;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: "Courier New", monospace;
+    font-size: 15px;
+    overflow-x: auto;
+}
