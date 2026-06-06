@@ -15,6 +15,7 @@
 <div class="management-menu">
     <button class="edit_student_btn"onclick="location.href='edit_student_info.php'">生徒情報を管理</button>
     <button class="edit_student_btn"onclick="location.href='edit_teacher_info.php'">担任情報を管理</button>
+    <button class="edit_student_btn"onclick="location.href='edit_late_history.php'">遅刻履歴を管理</button>
 </div>
 </body>
 </html>
