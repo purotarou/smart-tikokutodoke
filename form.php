@@ -75,7 +75,7 @@ function build_late_mail_body($student, $date, $week, $time, $late_count, $reaso
         '遅刻届が提出されました。',
         '',
         '学年: ' . $student['grade'] . '年',
-        '学組: ' . $student['class'] . '組',
+        '学級: ' . $student['class'] . '組',
         '出席番号: ' . $student['number'] . '番',
         '氏名: ' . $student['name'],
         '登校日時: ' . $date . '（' . $week . '） ' . $time,
