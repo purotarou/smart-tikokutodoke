@@ -199,3 +199,48 @@ input[type="checkbox"] {
     right: 20px;
     font-size: 1.7vw;
 }
+
+/* 学籍番号がわからない人への案内（index.html） */
+.manual-guide {
+    text-align: center;
+    font-size: 2vw;
+    margin: 5% 5% 1.5%;
+}
+.manual-entry-btn {
+    display: block;
+    margin: 0 auto;
+    font-size: 2vw;
+    padding: 1vw 3vw;
+}
+
+/* 学年・組・名前から選ぶ画面（manual_entry.php） */
+.manual-entry-form {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+.manual-row {
+    margin: 3% auto;
+    font-size: 2.2vw;
+}
+.manual-row label {
+    display: inline-block;
+    width: 6em;
+    text-align: right;
+    margin-right: 1vw;
+}
+.manual-entry-form select {
+    font-size: 2.2vw;
+    padding: 0.4vw;
+    min-width: 10em;
+}
+#manual-submit {
+    display: block;
+    margin: 6% auto 2%;
+    font-size: 2.2vw;
+    padding: 1vw 4vw;
+}
+.manual-back {
+    display: inline-block;
+    font-size: 1.8vw;
+}
