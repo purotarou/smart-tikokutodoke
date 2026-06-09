@@ -7,7 +7,12 @@
 #submitted {
     font-size: 9rem;
     text-align: center;
-    margin: 10%;
+    margin: 10% 10% 0;
+}
+.end-guide {
+    text-align: center;
+    font-size: 3rem;
+    margin: 3% 10% 10%;
 }
 #return-message p {
     position: fixed;
