@@ -1,6 +1,8 @@
 <?php
 //envファイルの読み込み
 require __DIR__ . '/vendor/autoload.php';
+// 予期せぬエラーを error_history に記録し、おわび画面へ誘導する共通処理
+require_once __DIR__ . '/error_handler.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->safeLoad();
@@ -23,7 +25,7 @@ try {
     $pdo = new PDO($dbname, $username, $password); 
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    exit('DB接続エラー:' . $e->getMessage());
+    go_to_error_page('DB接続エラー: ' . $e->getMessage());
 }
 
 //メール送信の関数を定義
@@ -174,9 +176,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             $error_message = $send_result;
         }
     } catch (PDOException $e) {
-        $error_message = 'DB処理エラー:' . $e->getMessage();
+        go_to_error_page('DB処理エラー: ' . $e->getMessage());
     } catch (Exception $e) {
-        $error_message = 'メール送信エラー:' . $e->getMessage();
+        go_to_error_page('メール送信エラー: ' . $e->getMessage());
     }
 }
 

@@ -5,6 +5,8 @@
 // student_info と照合して student_id を特定し、form.php へ送ります。
 // =============================================================
 require __DIR__ . '/db.php';
+// 予期せぬエラーを error_history に記録し、おわび画面へ誘導する共通処理
+require_once __DIR__ . '/error_handler.php';
 
 // 照合に使う全生徒の情報を取得（JS側で連動入力に使います）
 $students = $pdo->query(
