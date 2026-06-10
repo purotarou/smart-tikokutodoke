@@ -20,7 +20,7 @@ $error_message = '';
 //DB接続
 $dbname = 'mysql:host=localhost;dbname=tikokutodoke';
 $username = 'root';
-$password = 'password';
+$password = '';
 try {
     $pdo = new PDO($dbname, $username, $password); 
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
