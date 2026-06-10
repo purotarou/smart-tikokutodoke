@@ -19,7 +19,7 @@
 //    ここで起きた例外は内部で握りつぶします。
 function record_error_history($message) {
     try {
-        $pdo = new PDO('mysql:host=localhost;dbname=tikokutodoke;charset=utf8mb4', 'root', 'password');
+        $pdo = new PDO('mysql:host=localhost;dbname=tikokutodoke;charset=utf8mb4', 'root', '');
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $stmt = $pdo->prepare('INSERT INTO `error_history` (`date`, `error`) VALUES (NOW(), :error)');
         // error カラムは varchar(255) なので、長い場合は切り詰める
