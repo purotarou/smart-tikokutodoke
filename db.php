@@ -7,7 +7,7 @@
 
 $dbname   = 'mysql:host=localhost;dbname=tikokutodoke;charset=utf8mb4';
 $username = 'root';
-$password = 'password';
+$password = '';
 
 try {
     $pdo = new PDO($dbname, $username, $password);
