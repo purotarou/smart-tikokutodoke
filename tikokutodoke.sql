@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- ホスト: localhost
--- 生成日時: 2026 年 5 月 25 日 14:49
+-- 生成日時: 2026 年 6 月 10 日 10:38
 -- サーバのバージョン： 10.4.28-MariaDB
 -- PHP のバージョン: 8.2.4
 
@@ -24,10 +24,10 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- テーブルの構造 `class-teacher`
+-- テーブルの構造 `class_teacher`
 --
 
-CREATE TABLE `class-teacher` (
+CREATE TABLE `class_teacher` (
   `grade` int(11) NOT NULL,
   `class` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -35,19 +35,40 @@ CREATE TABLE `class-teacher` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- テーブルのデータのダンプ `class-teacher`
+-- テーブルのデータのダンプ `class_teacher`
 --
 
-INSERT INTO `class-teacher` (`grade`, `class`, `name`, `c_teacher_mail`) VALUES
-(1, 1, '山田太郎', '224010032@kousen.onmicrosoft.com');
+INSERT INTO `class_teacher` (`grade`, `class`, `name`, `c_teacher_mail`) VALUES
+(1, 1, '山田太郎', 'unibamataikitai807@gmail.com');
 
 -- --------------------------------------------------------
 
 --
--- テーブルの構造 `lateness-history`
+-- テーブルの構造 `error_history`
 --
 
-CREATE TABLE `lateness-history` (
+CREATE TABLE `error_history` (
+  `id` int(11) NOT NULL,
+  `date` datetime NOT NULL,
+  `error` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- テーブルのデータのダンプ `error_history`
+--
+
+INSERT INTO `error_history` (`id`, `date`, `error`) VALUES
+(2, '2026-06-10 03:12:54', 'メール送信エラー: クラス担任のメールアドレスが見つかりません。'),
+(3, '2026-06-10 03:14:53', 'メール送信エラー: クラス担任のメールアドレスが見つかりません。'),
+(4, '2026-06-10 03:15:18', 'メール送信エラー: クラス担任のメールアドレスが見つかりません。');
+
+-- --------------------------------------------------------
+
+--
+-- テーブルの構造 `lateness_history`
+--
+
+CREATE TABLE `lateness_history` (
   `id` int(11) NOT NULL,
   `grade` int(11) NOT NULL,
   `class` int(11) NOT NULL,
@@ -61,24 +82,22 @@ CREATE TABLE `lateness-history` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- テーブルのデータのダンプ `lateness-history`
+-- テーブルのデータのダンプ `lateness_history`
 --
 
-INSERT INTO `lateness-history` (`id`, `grade`, `class`, `number`, `name`, `date`, `week`, `time`, `late_count`, `reason`) VALUES
+INSERT INTO `lateness_history` (`id`, `grade`, `class`, `number`, `name`, `date`, `week`, `time`, `late_count`, `reason`) VALUES
 (1, 1, 1, 1, '田中太郎', '2026-05-20', '', '22:51:21', 0, '遅延'),
 (2, 1, 1, 1, '田中太郎', '2026-05-24', '日', '16:48:00', 1, '体調不良'),
 (3, 1, 1, 1, '田中太郎', '2026-05-24', '日', '23:22:00', 2, '体調不良、その他、人助け'),
 (4, 1, 1, 1, '田中太郎', '2026-05-24', '日', '23:27:00', 3, '体調不良、その他、人助け'),
 (5, 1, 1, 2, '田中次郎', '2026-05-25', '月', '20:51:00', 1, '通院'),
-(6, 1, 1, 2, '田中次郎', '2026-05-25', '月', '20:56:00', 1, '体調不良、発熱、頭痛、腹痛、嘔吐、下痢、めまい、通院、家事、電車の遅れ、寝坊、忘れ物、バスの遅れ、その他、aaaaaaaa');
-
 -- --------------------------------------------------------
 
 --
--- テーブルの構造 `student-info`
+-- テーブルの構造 `student_info`
 --
 
-CREATE TABLE `student-info` (
+CREATE TABLE `student_info` (
   `student_id` int(11) NOT NULL,
   `grade` int(11) NOT NULL,
   `class` int(11) NOT NULL,
@@ -88,73 +107,58 @@ CREATE TABLE `student-info` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- テーブルのデータのダンプ `student-info`
+-- テーブルのデータのダンプ `student_info`
 --
 
-INSERT INTO `student-info` (`student_id`, `grade`, `class`, `number`, `name`, `late_count`) VALUES
-(1, 1, 1, 1, '田中太郎', 3),
-(2, 1, 1, 2, '田中次郎', 1);
-
--- --------------------------------------------------------
-
---
--- テーブルの構造 `subject-teacher`
---
-
-CREATE TABLE `subject-teacher` (
-  `grade` int(11) NOT NULL,
-  `class` int(11) NOT NULL,
-  `weekday` varchar(1) NOT NULL,
-  `period` int(11) NOT NULL,
-  `subject` varchar(255) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `s_teacher_mail` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- テーブルのデータのダンプ `subject-teacher`
---
-
-INSERT INTO `subject-teacher` (`grade`, `class`, `weekday`, `period`, `subject`, `name`, `s_teacher_mail`) VALUES
-(1, 1, '月', 7, '数学1', '佐藤太郎', 'puroguramingtarou@gmail.com');
+INSERT INTO `student_info` (`student_id`, `grade`, `class`, `number`, `name`, `late_count`) VALUES
+(1, 1, 1, 1, '田中太郎', 15),
+(2, 1, 1, 2, '田中次郎', 3),
+(3, 2, 2, 3, '山本三郎', 1),
+(4, 3, 8, 2, '鈴木次郎', 3);
 
 --
 -- ダンプしたテーブルのインデックス
 --
 
 --
--- テーブルのインデックス `class-teacher`
+-- テーブルのインデックス `class_teacher`
 --
-ALTER TABLE `class-teacher`
+ALTER TABLE `class_teacher`
   ADD PRIMARY KEY (`c_teacher_mail`);
 
 --
--- テーブルのインデックス `lateness-history`
+-- テーブルのインデックス `error_history`
 --
-ALTER TABLE `lateness-history`
+ALTER TABLE `error_history`
   ADD PRIMARY KEY (`id`);
 
 --
--- テーブルのインデックス `student-info`
+-- テーブルのインデックス `lateness_history`
 --
-ALTER TABLE `student-info`
-  ADD PRIMARY KEY (`student_id`);
+ALTER TABLE `lateness_history`
+  ADD PRIMARY KEY (`id`);
 
 --
--- テーブルのインデックス `subject-teacher`
+-- テーブルのインデックス `student_info`
 --
-ALTER TABLE `subject-teacher`
-  ADD PRIMARY KEY (`s_teacher_mail`);
+ALTER TABLE `student_info`
+  ADD PRIMARY KEY (`student_id`);
 
 --
 -- ダンプしたテーブルの AUTO_INCREMENT
 --
 
 --
--- テーブルの AUTO_INCREMENT `lateness-history`
+-- テーブルの AUTO_INCREMENT `error_history`
 --
-ALTER TABLE `lateness-history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+ALTER TABLE `error_history`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- テーブルの AUTO_INCREMENT `lateness_history`
+--
+ALTER TABLE `lateness_history`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
