@@ -84,7 +84,7 @@ CREATE TABLE `lateness_history` (
 --
 
 INSERT INTO `lateness_history` (`id`, `grade`, `class`, `number`, `name`, `date`, `week`, `time`, `late_count`, `reason`) VALUES
-(1, 1, 1, 1, '田中太郎', '2026-05-20', '', '22:51:21', 1, '遅延');
+(1, 1, 1, 1, '田中太郎', '2026-05-20', '水', '22:51:21', 1, '遅延');
 
 -- --------------------------------------------------------
 
