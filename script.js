@@ -52,6 +52,7 @@
         };
     });
 
+    // セレクトに「選択してください」＋選択肢を入れる
     function fill(sel, items) {
         sel.innerHTML = '<option value="">選択してください</option>';
         items.forEach(function (it) {
@@ -61,6 +62,7 @@
             sel.appendChild(o);
         });
     }
+    // セレクトを「選択してください」だけに戻して、選べないようにする
     function resetSelect(sel) {
         sel.innerHTML = '<option value="">選択してください</option>';
         sel.value = '';
@@ -69,6 +71,7 @@
     function uniqueNums(arr) {
         return Array.from(new Set(arr)).sort(function (a, b) { return a - b; });
     }
+    // 学年・組・番号がそろって1人に決まったら、送信できるようにする
     function updateState() {
         const g = selGrade.value, c = selClass.value, n = selNumber.value;
         let match = null;
@@ -86,70 +89,63 @@
         }
     }
 
-    // 学年の選択肢を初期化
+    // 学年の選択肢を初期化（最初は組・番号・名前は選べない状態）
     const grades = uniqueNums(data.map(function (s) { return s.grade; }));
     fill(selGrade, grades.map(function (g) { return { value: g, text: g + '年' }; }));
 
+    // 学年を選ぶと、組が選べるようになる
     selGrade.addEventListener('change', function () {
         resetSelect(selClass);
         resetSelect(selNumber);
         resetSelect(selName);
         const g = selGrade.value;
-        if (!g) { updateState(); return; }
-
-        const inGrade = data.filter(function (s) { return s.grade === g; });
-        const classes = uniqueNums(inGrade.map(function (s) { return s.klass; }));
-        fill(selClass, classes.map(function (c) { return { value: c, text: c + '組' }; }));
-        selClass.disabled = false;
-
-        fill(selName, inGrade.map(function (s) { return { value: s.id, text: s.name }; }));
-        selName.disabled = false;
-
+        if (g) {
+            const inGrade = data.filter(function (s) { return s.grade === g; });
+            const classes = uniqueNums(inGrade.map(function (s) { return s.klass; }));
+            fill(selClass, classes.map(function (c) { return { value: c, text: c + '組' }; }));
+            selClass.disabled = false;
+        }
         updateState();
     });
 
+    // 組を選ぶと、出席番号と名前が選べるようになる
     selClass.addEventListener('change', function () {
         resetSelect(selNumber);
+        resetSelect(selName);
         const g = selGrade.value, c = selClass.value;
-        if (!c) {
-            const inGrade = data.filter(function (s) { return s.grade === g; });
-            fill(selName, inGrade.map(function (s) { return { value: s.id, text: s.name }; }));
+        if (g && c) {
+            const inGC = data.filter(function (s) { return s.grade === g && s.klass === c; });
+            const numbers = uniqueNums(inGC.map(function (s) { return s.number; }));
+            fill(selNumber, numbers.map(function (n) { return { value: n, text: n + '番' }; }));
+            selNumber.disabled = false;
+            fill(selName, inGC.map(function (s) { return { value: s.id, text: s.name }; }));
             selName.disabled = false;
-            updateState();
-            return;
         }
-        const inGC = data.filter(function (s) { return s.grade === g && s.klass === c; });
-        const numbers = uniqueNums(inGC.map(function (s) { return s.number; }));
-        fill(selNumber, numbers.map(function (n) { return { value: n, text: n + '番' }; }));
-        selNumber.disabled = false;
-        fill(selName, inGC.map(function (s) { return { value: s.id, text: s.name }; }));
-        selName.disabled = false;
-        selName.value = '';
         updateState();
     });
 
+    // 出席番号を選ぶと、同じ生徒の名前も自動で合わせる
     selNumber.addEventListener('change', function () {
         const g = selGrade.value, c = selClass.value, n = selNumber.value;
         if (g && c && n) {
             const st = data.find(function (s) {
                 return s.grade === g && s.klass === c && s.number === n;
             });
-            if (st) { selName.value = st.id; }
+            selName.value = st ? st.id : '';
+        } else {
+            selName.value = '';
         }
         updateState();
     });
 
+    // 名前を選ぶと、同じ生徒の出席番号も自動で合わせる
     selName.addEventListener('change', function () {
         const id = selName.value;
-        if (!id) { updateState(); return; }
-        const st = data.find(function (s) { return s.id === id; });
-        if (st) {
-            selClass.value = st.klass;
-            const inGC = data.filter(function (s) { return s.grade === st.grade && s.klass === st.klass; });
-            const numbers = uniqueNums(inGC.map(function (s) { return s.number; }));
-            fill(selNumber, numbers.map(function (n) { return { value: n, text: n + '番' }; }));
-            selNumber.disabled = false;
-            selNumber.value = st.number;
+        if (id) {
+            const st = data.find(function (s) { return s.id === id; });
+            if (st) { selNumber.value = st.number; }
+        } else {
+            selNumber.value = '';
         }
         updateState();
     });

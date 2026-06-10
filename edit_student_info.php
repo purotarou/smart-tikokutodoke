@@ -132,13 +132,17 @@ if (isset($_GET['msg'])) {
 $edit_id = isset($_GET['edit']) ? (int)$_GET['edit'] : 0;
 
 // 絞り込みフィルター
-$filter_grade = isset($_GET['grade']) && $_GET['grade'] !== '' ? (int)$_GET['grade'] : null;
-$filter_class = isset($_GET['class']) && $_GET['class'] !== '' ? (int)$_GET['class'] : null;
+$filter_grade  = isset($_GET['grade'])  && $_GET['grade']  !== '' ? (int)$_GET['grade']  : null;
+$filter_class  = isset($_GET['class'])  && $_GET['class']  !== '' ? (int)$_GET['class']  : null;
+$filter_number = isset($_GET['number']) && $_GET['number'] !== '' ? (int)$_GET['number'] : null;
+$filter_name   = isset($_GET['name'])   ? trim($_GET['name']) : '';
 
 $where_parts  = [];
 $where_params = [];
-if ($filter_grade !== null) { $where_parts[] = 'grade = ?'; $where_params[] = $filter_grade; }
-if ($filter_class !== null) { $where_parts[] = 'class = ?'; $where_params[] = $filter_class; }
+if ($filter_grade  !== null) { $where_parts[] = 'grade = ?';  $where_params[] = $filter_grade; }
+if ($filter_class  !== null) { $where_parts[] = 'class = ?';  $where_params[] = $filter_class; }
+if ($filter_number !== null) { $where_parts[] = 'number = ?'; $where_params[] = $filter_number; }
+if ($filter_name   !== '')   { $where_parts[] = 'name = ?';   $where_params[] = $filter_name; }
 $where_sql = $where_parts ? 'WHERE ' . implode(' AND ', $where_parts) : '';
 
 // 一覧データを取得
@@ -146,9 +150,11 @@ $stmt = $pdo->prepare("SELECT * FROM student_info {$where_sql} ORDER BY grade, c
 $stmt->execute($where_params);
 $students = $stmt->fetchAll();
 
-// セレクトボックス用の選択肢
-$grades  = $pdo->query("SELECT DISTINCT grade FROM student_info ORDER BY grade")->fetchAll(PDO::FETCH_COLUMN);
-$classes = $pdo->query("SELECT DISTINCT class  FROM student_info ORDER BY class")->fetchAll(PDO::FETCH_COLUMN);
+// 絞り込みセレクトの選択肢。
+// 学年はそのまま、組・番号・名前は名簿データ（$roster）をもとに
+// 画面側（admin_filter.js）で学年→組→番号→名前と連動させて作ります。
+$grades = $pdo->query("SELECT DISTINCT grade FROM student_info ORDER BY grade")->fetchAll(PDO::FETCH_COLUMN);
+$roster = $pdo->query("SELECT grade, class, number, name FROM student_info ORDER BY grade, class, number")->fetchAll();
 
 $pdo = null;
 ?>
@@ -160,6 +166,16 @@ $pdo = null;
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/admin.css">
     <title>生徒情報の管理 | Smart遅刻届</title>
+    <script>
+    // 連動セレクト（学年→組→番号→名前）に渡すデータ
+    window.FILTER_STUDENTS = <?php echo json_encode($roster, JSON_UNESCAPED_UNICODE); ?>;
+    window.FILTER_CURRENT = {
+        class:  <?php echo json_encode($filter_class  === null ? '' : (string)$filter_class); ?>,
+        number: <?php echo json_encode($filter_number === null ? '' : (string)$filter_number); ?>,
+        name:   <?php echo json_encode($filter_name); ?>
+    };
+    </script>
+    <script src="admin_filter.js" defer></script>
 </head>
 <body class="admin">
 <h1 class="management-header">生徒情報の管理</h1>
@@ -186,21 +202,26 @@ $pdo = null;
 
     <form method="get" action="edit_student_info.php" class="filter-form">
         <label class="filter-label">学年：</label>
-        <select name="grade" class="filter-select">
+        <select name="grade" id="filter-grade" class="filter-select">
             <option value="">すべて</option>
             <?php foreach ($grades as $g): ?>
                 <option value="<?php echo h($g); ?>" <?php if ($filter_grade === (int)$g) echo 'selected'; ?>><?php echo h($g); ?>年</option>
             <?php endforeach; ?>
         </select>
         <label class="filter-label">組：</label>
-        <select name="class" class="filter-select">
+        <select name="class" id="filter-class" class="filter-select" disabled>
             <option value="">すべて</option>
-            <?php foreach ($classes as $c): ?>
-                <option value="<?php echo h($c); ?>" <?php if ($filter_class === (int)$c) echo 'selected'; ?>><?php echo h($c); ?>組</option>
-            <?php endforeach; ?>
+        </select>
+        <label class="filter-label">番号：</label>
+        <select name="number" id="filter-number" class="filter-select" disabled>
+            <option value="">すべて</option>
+        </select>
+        <label class="filter-label">名前：</label>
+        <select name="name" id="filter-name" class="filter-select" disabled>
+            <option value="">すべて</option>
         </select>
         <button type="submit" class="btn btn-add" style="padding:10px 24px;font-size:18px">絞り込む</button>
-        <?php if ($filter_grade !== null || $filter_class !== null): ?>
+        <?php if ($filter_grade !== null || $filter_class !== null || $filter_number !== null || $filter_name !== ''): ?>
             <a href="edit_student_info.php" class="btn btn-cancel" style="padding:10px 16px;font-size:18px">リセット</a>
         <?php endif; ?>
     </form>

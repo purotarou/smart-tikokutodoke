@@ -150,17 +150,79 @@ if ($filter_grade  !== null) { $where_parts[] = 'grade = ?';       $where_params
 if ($filter_class  !== null) { $where_parts[] = 'class = ?';       $where_params[] = $filter_class; }
 if ($filter_number !== null) { $where_parts[] = 'number = ?';      $where_params[] = $filter_number; }
 if ($filter_month  !== null) { $where_parts[] = 'MONTH(date) = ?'; $where_params[] = $filter_month; }
-if ($filter_name   !== '')   { $where_parts[] = 'name LIKE ?';     $where_params[] = '%' . $filter_name . '%'; }
+if ($filter_name   !== '')   { $where_parts[] = 'name = ?';        $where_params[] = $filter_name; }
 $where_sql = $where_parts ? 'WHERE ' . implode(' AND ', $where_parts) : '';
 
 $stmt = $pdo->prepare("SELECT * FROM lateness_history {$where_sql} ORDER BY date DESC, time DESC");
 $stmt->execute($where_params);
 $histories = $stmt->fetchAll();
 
-// セレクトボックス用の選択肢
-$grades  = $pdo->query("SELECT DISTINCT grade  FROM lateness_history ORDER BY grade")->fetchAll(PDO::FETCH_COLUMN);
-$classes = $pdo->query("SELECT DISTINCT class  FROM lateness_history ORDER BY class")->fetchAll(PDO::FETCH_COLUMN);
-$numbers = $pdo->query("SELECT DISTINCT number FROM lateness_history ORDER BY number")->fetchAll(PDO::FETCH_COLUMN);
+// -------------------------------------------------------------
+// いまの絞り込み内容を、人が読める日本語のラベルにする。
+// （CSV出力ボタンの説明文と、ダウンロードするファイル名に使います）
+// 例: 「3年4組」「3年・5月」「名前に「田中」を含む」 / 絞り込みなしは null
+// -------------------------------------------------------------
+$who_parts = [];
+if ($filter_grade  !== null) { $who_parts[] = $filter_grade  . '年'; }
+if ($filter_class  !== null) { $who_parts[] = $filter_class  . '組'; }
+if ($filter_number !== null) { $who_parts[] = $filter_number . '番'; }
+
+$label_parts = [];
+if ($who_parts)             { $label_parts[] = implode('', $who_parts); }
+if ($filter_month !== null) { $label_parts[] = $filter_month . '月'; }
+if ($filter_name  !== '')   { $label_parts[] = '名前が「' . $filter_name . '」'; }
+
+$filter_label = $label_parts ? implode('・', $label_parts) : null;
+
+// CSV出力ボタンのリンク先（いまの絞り込み条件をそのまま引き継ぐ）
+$export_query = ['export' => 1];
+if ($filter_grade  !== null) { $export_query['grade']  = $filter_grade; }
+if ($filter_class  !== null) { $export_query['class']  = $filter_class; }
+if ($filter_number !== null) { $export_query['number'] = $filter_number; }
+if ($filter_month  !== null) { $export_query['month']  = $filter_month; }
+if ($filter_name   !== '')   { $export_query['name']   = $filter_name; }
+$export_url = 'edit_late_history.php?' . http_build_query($export_query);
+
+// -------------------------------------------------------------
+// CSVエクスポート（?export=1）
+// いま画面に表示されている（＝上で絞り込んだ）記録だけを出力します。
+// ・ExcelやGoogleスプレッドシートで開ける UTF-8（BOM付き）のCSVにします。
+// ・列の並びは「CSVで一括追加」と同じなので、そのまま読み込み直せます。
+//   （1行目の見出しは、取り込み時に自動で読み飛ばされます）
+// -------------------------------------------------------------
+if (isset($_GET['export'])) {
+    $name_for_file = $filter_label !== null ? $filter_label : 'すべて';
+    $filename = '遅刻履歴_' . $name_for_file . '_' . date('Ymd') . '.csv';
+
+    header('Content-Type: text/csv; charset=UTF-8');
+    header("Content-Disposition: attachment; filename*=UTF-8''" . rawurlencode($filename));
+
+    echo "\xEF\xBB\xBF"; // ExcelがUTF-8と分かるように、先頭にBOMを付ける
+    $out = fopen('php://output', 'w');
+    // 1行目の見出し（「CSVで一括追加」の見本と同じ並び）
+    fputcsv($out, ['学年', '組', '出席番号', '名前', '日付', '時刻', '遅刻回数', '理由']);
+    foreach ($histories as $hrow) {
+        fputcsv($out, [
+            $hrow['grade'],
+            $hrow['class'],
+            $hrow['number'],
+            $hrow['name'],
+            $hrow['date'],
+            $hrow['time'],
+            $hrow['late_count'],
+            $hrow['reason'],
+        ]);
+    }
+    fclose($out);
+    exit;
+}
+
+// 絞り込みセレクトの選択肢。
+// 学年は生徒名簿（student_info）から、組・番号・名前は名簿データ（$roster）を
+// もとに画面側（admin_filter.js）で連動させて作ります。
+// こうすることで、まだ遅刻記録の無い学年・組・番号・名前もあらかじめ選べます。
+$grades = $pdo->query("SELECT DISTINCT grade FROM student_info ORDER BY grade")->fetchAll(PDO::FETCH_COLUMN);
+$roster = $pdo->query("SELECT grade, class, number, name FROM student_info ORDER BY grade, class, number")->fetchAll();
 $pdo = null;
 ?>
 <!DOCTYPE html>
@@ -171,6 +233,16 @@ $pdo = null;
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/admin.css">
     <title>遅刻履歴の管理 | Smart遅刻届</title>
+    <script>
+    // 連動セレクト（学年→組→番号→名前）に渡すデータ
+    window.FILTER_STUDENTS = <?php echo json_encode($roster, JSON_UNESCAPED_UNICODE); ?>;
+    window.FILTER_CURRENT = {
+        class:  <?php echo json_encode($filter_class  === null ? '' : (string)$filter_class); ?>,
+        number: <?php echo json_encode($filter_number === null ? '' : (string)$filter_number); ?>,
+        name:   <?php echo json_encode($filter_name); ?>
+    };
+    </script>
+    <script src="admin_filter.js" defer></script>
 </head>
 <body class="admin">
 <h1 class="management-header">遅刻履歴の管理</h1>
@@ -190,6 +262,7 @@ $pdo = null;
         ・記録は新しいものが上に並びます。<br>
         ・「曜日」は日付から自動で決まるので、入力する必要はありません。<br>
         ・1件ずつ直すときは「編集」ボタン、まとめて消すときは左の□にチェックを入れて「選択した記録をまとめて削除」を押してください。<br>
+        ・いま表示されている記録をCSVファイルに保存したいときは、下の「CSVファイルでまとめて出力する」をお使いください。<br>
         ・まとめて追加するときは下の「CSVで一括追加」をお使いください。
     </div>
 
@@ -198,25 +271,19 @@ $pdo = null;
 
     <form method="get" action="edit_late_history.php" class="filter-form">
         <label class="filter-label">学年：</label>
-        <select name="grade" class="filter-select">
+        <select name="grade" id="filter-grade" class="filter-select">
             <option value="">すべて</option>
             <?php foreach ($grades as $g): ?>
                 <option value="<?php echo h($g); ?>" <?php if ($filter_grade === (int)$g) echo 'selected'; ?>><?php echo h($g); ?>年</option>
             <?php endforeach; ?>
         </select>
         <label class="filter-label">組：</label>
-        <select name="class" class="filter-select">
+        <select name="class" id="filter-class" class="filter-select" disabled>
             <option value="">すべて</option>
-            <?php foreach ($classes as $c): ?>
-                <option value="<?php echo h($c); ?>" <?php if ($filter_class === (int)$c) echo 'selected'; ?>><?php echo h($c); ?>組</option>
-            <?php endforeach; ?>
         </select>
         <label class="filter-label">番号：</label>
-        <select name="number" class="filter-select">
+        <select name="number" id="filter-number" class="filter-select" disabled>
             <option value="">すべて</option>
-            <?php foreach ($numbers as $n): ?>
-                <option value="<?php echo h($n); ?>" <?php if ($filter_number === (int)$n) echo 'selected'; ?>><?php echo h($n); ?>番</option>
-            <?php endforeach; ?>
         </select>
         <label class="filter-label">月：</label>
         <select name="month" class="filter-select">
@@ -226,7 +293,9 @@ $pdo = null;
             <?php endfor; ?>
         </select>
         <label class="filter-label">名前：</label>
-        <input type="text" name="name" value="<?php echo h($filter_name); ?>" placeholder="例：田中" class="filter-input">
+        <select name="name" id="filter-name" class="filter-select" disabled>
+            <option value="">すべて</option>
+        </select>
         <button type="submit" class="btn btn-add" style="padding:10px 24px;font-size:18px">絞り込む</button>
         <?php if ($filter_grade !== null || $filter_class !== null || $filter_number !== null || $filter_month !== null || $filter_name !== ''): ?>
             <a href="edit_late_history.php" class="btn btn-cancel" style="padding:10px 16px;font-size:18px">リセット</a>
@@ -376,6 +445,37 @@ $pdo = null;
         });
     })();
     </script>
+
+    <!-- ============ CSV一括出力 ============ -->
+    <h2 class="management-subheader">CSVファイルでまとめて出力する</h2>
+    <div class="form-card">
+        <p class="management-description">
+            遅刻履歴を、CSVファイルにまとめて保存（ダウンロード）します。<br>
+            保存したファイルは ExcelやGoogleスプレッドシートで開いたり、もう一度この画面の「CSVで一括追加」から読み込んだりできます。
+        </p>
+
+        <div class="export-summary">
+            <?php if (count($histories) === 0): ?>
+                いまは出力できる記録がありません。<br>
+                絞り込みの条件を変える（または「リセット」する）と、出力できるようになります。
+            <?php else: ?>
+                いまこのボタンを押すと、
+                <strong><?php echo $filter_label !== null ? h($filter_label) . ' の遅刻履歴' : 'すべての遅刻履歴'; ?>（<?php echo count($histories); ?>件）</strong>
+                が出力されます。
+            <?php endif; ?>
+        </div>
+
+        <div class="guide-box">
+            <strong>出力される範囲についてのご注意</strong><br>
+            このボタンで保存されるのは、<u>いま画面で絞り込んで表示されている記録だけ</u>です。<br>
+            上の「学年・組・番号・月・名前」で絞り込んでいると、その条件に合う記録だけが出力されます。<br>
+            <strong>すべての記録を出力したいときは、上の絞り込みを「リセット」して全件を表示してから、もう一度このボタンを押してください。</strong>
+        </div>
+
+        <?php if (count($histories) > 0): ?>
+            <a class="btn btn-add" href="<?php echo h($export_url); ?>">この内容でCSVファイルに出力する</a>
+        <?php endif; ?>
+    </div>
 
     <!-- ============ 新規追加 ============ -->
     <h2 class="management-subheader">遅刻の記録を1件ずつ追加する</h2>

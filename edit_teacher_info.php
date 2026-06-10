@@ -122,7 +122,7 @@ $where_parts  = [];
 $where_params = [];
 if ($filter_grade !== null) { $where_parts[] = 'grade = ?';  $where_params[] = $filter_grade; }
 if ($filter_class !== null) { $where_parts[] = 'class = ?';  $where_params[] = $filter_class; }
-if ($filter_name  !== '')   { $where_parts[] = 'name LIKE ?'; $where_params[] = '%' . $filter_name . '%'; }
+if ($filter_name  !== '')   { $where_parts[] = 'name = ?'; $where_params[] = $filter_name; }
 $where_sql = $where_parts ? 'WHERE ' . implode(' AND ', $where_parts) : '';
 
 $stmt = $pdo->prepare("SELECT * FROM class_teacher {$where_sql} ORDER BY grade, class");
@@ -132,6 +132,7 @@ $teachers = $stmt->fetchAll();
 // セレクトボックス用の選択肢
 $grades  = $pdo->query("SELECT DISTINCT grade FROM class_teacher ORDER BY grade")->fetchAll(PDO::FETCH_COLUMN);
 $classes = $pdo->query("SELECT DISTINCT class FROM class_teacher ORDER BY class")->fetchAll(PDO::FETCH_COLUMN);
+$names   = $pdo->query("SELECT DISTINCT name  FROM class_teacher ORDER BY name")->fetchAll(PDO::FETCH_COLUMN);
 
 $pdo = null;
 ?>
@@ -184,7 +185,12 @@ $pdo = null;
             <?php endforeach; ?>
         </select>
         <label class="filter-label">名前：</label>
-        <input type="text" name="name" value="<?php echo h($filter_name); ?>" placeholder="例：田中" class="filter-input">
+        <select name="name" class="filter-select">
+            <option value="">すべて</option>
+            <?php foreach ($names as $nm): ?>
+                <option value="<?php echo h($nm); ?>" <?php if ($filter_name === (string)$nm) echo 'selected'; ?>><?php echo h($nm); ?></option>
+            <?php endforeach; ?>
+        </select>
         <button type="submit" class="btn btn-add" style="padding:10px 24px;font-size:18px">絞り込む</button>
         <?php if ($filter_grade !== null || $filter_class !== null || $filter_name !== ''): ?>
             <a href="edit_teacher_info.php" class="btn btn-cancel" style="padding:10px 16px;font-size:18px">リセット</a>

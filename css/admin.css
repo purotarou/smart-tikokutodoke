@@ -204,6 +204,17 @@ body.admin {
     width: 150px;
 }
 
+/* いま何がCSV出力されるかの案内（おじいちゃん向けに目立たせる） */
+.export-summary {
+    background: #e8f0fb;
+    border: 2px solid #2c5aa0;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 18px;
+}
+.export-summary strong { color: #1f4178; }
+
 /* CSVの形式サンプル */
 .csv-sample {
     background: #f0f3f7;
